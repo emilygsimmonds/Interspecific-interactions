@@ -60,11 +60,12 @@ alpha_ji <- (-rj*a_j)/K
 # Store these parameters in a dataframe for input to Simulation_func
 
 parameters_pp <- data.frame(n = 50,
-                            start = log(100),
-                            ri = ri,
-                            rj = rj,
-                            ci = ci,
-                            cj = cj,
+                            start_i = 100,
+                            start_j = 100,
+                            r_i = r_i,
+                            r_j = r_j,
+                            c_i = c_i,
+                            c_j = c_j,
                             alpha_ij = rep(alpha_ij, each = 100),
                             alpha_ji = rep(alpha_ji, each = 100),
                             tau = 0.2, Rho = 0.007
@@ -83,11 +84,12 @@ alpha_ji <- (-rj*a_j)/K
 # Store these parameters in a dataframe for input to Simulation_func
 
 parameters_c <- data.frame(n = 50,
-                           start = log(100),
-                           ri = ri,
-                           rj = rj,
-                           ci = ci,
-                           cj = cj,
+                           start_i = 100,
+                           start_j = 100,
+                           r_i = r_i,
+                           r_j = r_j,
+                           c_i = c_i,
+                           c_j = c_j,
                            alpha_ij = rep(alpha_ij, each = 100),
                            alpha_ji = rep(alpha_ji, each = 100),
                            tau = 0.2, Rho = 0.007
