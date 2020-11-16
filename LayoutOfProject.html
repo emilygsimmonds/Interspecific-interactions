@@ -392,8 +392,16 @@ summary {
 <p>This is done in the <a href="https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_creation.R">Simulation_creation.R</a> script, which uses the <a href="https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Gompertz_function.R">Gompertz_function.R</a> function and the <a href="https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_function.R">Simulation_function.R</a>.</p>
 <p>I simultaneously simulate two time series of observed population size (<span class="math inline">\(Y\)</span>) for species <span class="math inline">\(i\)</span> and species <span class="math inline">\(j\)</span> and the log population size.</p>
 <p>To do this, I use the following equations (Gompertz equations on the log-linear scale):</p>
-<p><span class="math inline">\(Y_i\)</span> ~ Pois(exp(<span class="math inline">\(N_i\)</span>)) <span class="math inline">\(N_i\)</span> = <span class="math inline">\(r_i\)</span> + <span class="math inline">\(c_i N_i\)</span> + <span class="math inline">\(\alpha_{ij} N_j\)</span> + <span class="math inline">\(e_i\)</span></p>
-<p><span class="math inline">\(Y_j\)</span> ~ Pois(exp(<span class="math inline">\(N_j\)</span>)) <span class="math inline">\(N_j\)</span> = <span class="math inline">\(r_j\)</span> + <span class="math inline">\(c_j N_j\)</span> + <span class="math inline">\(\alpha_{ji} N_i\)</span> + <span class="math inline">\(e_j\)</span></p>
+<p><span class="math display">\[
+Y_i \~ Pois(exp(N_i))
+\]</span> <span class="math display">\[
+N_i = r_i + c_i N_i + \alpha_{ij} N_j + e_i
+\]</span></p>
+<p><span class="math display">\[
+Y_j \~ Pois(exp(N_j))
+\]</span> <span class="math display">\[
+N_j = r_j + c_j N_j + \alpha_{ji} N_i + e_j
+\]</span></p>
 <p>where, <span class="math inline">\(N\)</span> = log actual population size, <span class="math inline">\(r\)</span> = intrinsic growth rate, <span class="math inline">\(c\)</span> = intraspecific competition (density dependence), <span class="math inline">\(/alpha\)</span> = interspecific effect, <span class="math inline">\(e\)</span> = random error.</p>
 <p>Both the true population size and the observed population size including Poisson error are output.</p>
 <p>I simulate populations using the following baseline parameter values:</p>
@@ -408,6 +416,16 @@ summary {
 <li>Competitive: <span class="math inline">\(\alpha_{ij}\)</span> = <span class="math inline">\(\alpha_{ji}\)</span> = 0.13</li>
 <li>Mutulaist: <span class="math inline">\(\alpha_{ij}\)</span> = <span class="math inline">\(\alpha_{ji}\)</span> = -0.18</li>
 </ul>
+</div>
+<div id="run-a-nimble-model-for-the-simulated-data" class="section level3">
+<h3>Run a Nimble model for the simulated data</h3>
+<p>The Nimble model is run using the script <a href="https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/NimbleModel.R">NimbleModel.R</a> using the output from <a href="https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_creation.R">Simulation_creation.R</a>.</p>
+<p>This uses a gridded approach to estimating the <span class="math inline">\(\alpha\)</span> values (inter-specific interactions). These parameters proved hard to estimate using MCMC.</p>
+<p>For anyone that does not know Nimble, there is a cheatsheet <a href="https://r-nimble.org/cheatsheets/NimbleCheatSheet.pdf">here:</a>. Nimble runs in C++ and requires a C++ compiler to be installed. Instructions to install can be found <a href="https://r-nimble.org/html_manual/cha-installing-nimble.html">here:</a>.</p>
+</div>
+<div id="run-an-inla-model-for-the-simulated-data" class="section level3">
+<h3>Run an INLA model for the simulated data</h3>
+<p>The INLA model is run using the script <a href="https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/INLAModel.R">INLAModel.R</a> using the output from <a href="https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_creation.R">Simulation_creation.R</a>.</p>
 </div>
 </div>
 </div>

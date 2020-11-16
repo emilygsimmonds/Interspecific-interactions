@@ -72,7 +72,7 @@ The values of alpha depend on the type of interaction:
 
 ### Run a Nimble model for the simulated data
 
-The Nimble model is run using the script [NimbleModel.R]() using the output
+The Nimble model is run using the script [NimbleModel.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/NimbleModel.R) using the output
 from [Simulation_creation.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_creation.R). 
 
 This uses a gridded approach to estimating the $\alpha$ values (inter-specific
@@ -84,5 +84,5 @@ found [here:](https://r-nimble.org/html_manual/cha-installing-nimble.html).
 
 ### Run an INLA model for the simulated data
 
-The INLA model is run using the script [INLAModel.R]() using the output
+The INLA model is run using the script [INLAModel.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/INLAModel.R) using the output
 from [Simulation_creation.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_creation.R). 
