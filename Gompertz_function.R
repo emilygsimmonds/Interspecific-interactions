@@ -14,7 +14,11 @@
   # alpha_ji = effect of species i on species j
 
 
-Gompertz_func <- function(r_i, r_j, c_i, c_j, N_i, N_j, e_i, e_j, alpha_ij, alpha_ji){
+Gompertz_func <- function(r_i, r_j, 
+                          c_i, c_j, 
+                          N_i, N_j, 
+                          e_i, e_j, 
+                          alpha_ij, alpha_ji){
   
   # simulate the value of Ni and Nj at t+1
   

@@ -2,9 +2,9 @@
 
 ###############################################################################
 
-#### Load required packages/libraries ####
+#### Required packages/libraries ####
 
-require(MASS)
+# You will need package MASS installed
 
 ###############################################################################
 
@@ -48,7 +48,7 @@ Simulation_func <- function(parameters){
   N[1,2] <- parameters$start_j
   
   # Then simulate the random noise from a multivariate normal
-  e <- mvrnorm(n = parameters$n+100, 
+  e <- MASS::mvrnorm(n = parameters$n+100, 
                mu = c(0,0), 
                Sigma = matrix(c(parameters$tau, 
                                 parameters$rho, 
@@ -88,7 +88,7 @@ Simulation_func <- function(parameters){
   # If the test shows that any populations did not meet the criteria the 
   # simulation is repeated until the test is passed
   while(test > 0){
-    e <- mvrnorm(n = parameters$n+100, 
+    e <- MASS::mvrnorm(n = parameters$n+100, 
                  mu = c(0,0), 
                  Sigma = matrix(c(parameters$tau, 
                                   parameters$rho, 
