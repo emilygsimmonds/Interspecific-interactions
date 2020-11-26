@@ -28,7 +28,7 @@ load("simulations_output_2020.RData")
 
 tic() # starts a timer
 
-Scenario1INLA <- future_map(.x = simulations_all[[1]], ~{
+Scenario1INLA <- future_map(.x = simulations_all[1], ~{
   
   # set up INLA data
   
