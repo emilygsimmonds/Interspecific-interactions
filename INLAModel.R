@@ -28,7 +28,7 @@ load("simulations_output_2020.RData")
 
 tic() # starts a timer
 
-Scenario1INLA <- future_map(.x = simulations_all[1], ~{
+Scenario1INLA <- future_map(.x = simulations_all[[1]], ~{
   
   # set up INLA data
   
@@ -51,17 +51,22 @@ Scenario1INLA <- future_map(.x = simulations_all[1], ~{
   
   # and indexes
   
-  NAs.Y <- rep(NA, n) # indexes
-  NAsm1 <- rep(NA, m) # indexes
+  NAs.Y <- rep(NA, n) # indexes: NA length = n
+  NAsm1 <- rep(NA, m) # indexes: NA length = n-1
   
-  sp1.lamda <- c(1:n, NAs.Y, 2:n, NAsm1) # connect state and count sp1
+  # connect state and count sp1
+  # indexes should be 1:n column 1, NA col 2 and 4, 1:n column 3 but first is NA
+  sp1.lamda <- c(1:n, NAs.Y, 2:n, NAsm1) 
+  # weights results 1 = observation, -1 = state = mean of 0
   w.sp1.lamda <- c(rep(1,n), NAs.Y, rep(-1, m), NAsm1)
   
+  # same for sp2 but shift columns by 1
   sp2.lamda <- c(NAs.Y, 1:n, NAsm1, 2:n) # connect state and count sp2
   w.sp2.lamda <- c(NAs.Y, rep(1,n),  NAsm1, rep(-1, m))
   
   # need a copy for each coefficient
-  
+  # create the effect of species on itself
+  # do this for the STATE part, NA in first bit then 1:n-1
   sp2.copy1 <- c(NAs.Y, NAs.Y, NAsm1, 1:m) # time lag influence on own species
   
   # indexed to the state/ discrepancy not to the observations
@@ -73,6 +78,8 @@ Scenario1INLA <- future_map(.x = simulations_all[1], ~{
   # time lag influence on other species (i on j)
   sp1.copy2 <- c(NAs.Y, NAs.Y, NAsm1, 1:m) 
   
+  # Finally, create the shared noise component
+  # this focuses on the state, first entry is NA
   combo.noise <- c(NAs.Y, NAs.Y, 2:n, 2:n) # shared noise term (correlated)
   
   # create vectors for the intercepts
