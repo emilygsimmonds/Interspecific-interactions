@@ -19,105 +19,124 @@ source("./Gompertz_function.R")
 #### Define function ####
 
 # Arguments:
+  
+  # n, starts, r, alphas, tau, rho, burnin
 
-  # parameters = data frame with columns:
-    # n, start_i, start_j, r_i, r_j, c_i, c_j, alpha_ij, alpha_ji, tau, rho
-
-    # i and j = the interacting species
     # n = length of simulation
-    # start = starting log population size
-    # r = intrinsic growth rate
-    # c = intra-specific competition
-    # alpha_ij = effect of species j on species i
-    # alpha_ji = effect of species i on species j
+    # starts = starting log population size for each species
+    # r = intrinsic growth rates (vector of length = number of species)
+    # alphas = matrix with ncol = nrow = number of species 
     # tau = variance of noise (mean = 0)
-    # rho = covariance of noise between species
+    # rho = covariance of noise between species (length = number of species -1)
+    # burnin, number of years wanted to discard from simulation (default = 100)
 
 # Function outputs N = true population size and Y = observed population size
 
-Simulation_func <- function(parameters){
+Simulation_func <- function(n = 100,
+                            starts = NULL,
+                            r = NULL,
+                            alphas = NULL,
+                            tau = NULL,
+                            rho = NULL, 
+                            burnin = 100){
+  
+  #### CHECKS
+  
+  # is anything missing?
+  
+  if(is.null(starts)){stop("please supply starting pop size (starts)")}
+  if(is.null(r)){stop("please supply intrinsic growth rate (r)")}
+  if(is.null(alphas)){stop("please supply interaction strengths (alphas)")}
+  if(is.null(tau)){stop("please supply var of noise (tau)")}
+  if(is.null(rho)){stop("please supply correlation of noise (e)")}
+  
+  # are all of the elements the correct length?
+  
+  if((length(r)==length(starts) &
+      length(starts)==length(alphas)/2)==FALSE)
+  {stop("inputs (r, N, starts, e, or half alphas) are not the same length")}
+  
+  if((length(tau)==length(rho))==FALSE)
+  {stop("inputs (tau and rho) are not the same length")}
+    
   
   # First define an empty vector of length n to store observed population sizes
-  Y_j <- Y_i <- rep(NA, parameters$n)
+  Y_j <- Y_i <- rep(NA, n)
   
   # and true population size
-  N <- matrix(NA, nrow=(parameters$n+100), ncol=2)
+  N <- matrix(NA, nrow=(n+burnin), ncol=2)
   
   # The first values are given in parameters
-  N[1,1] <- parameters$start_i
-  N[1,2] <- parameters$start_j
+  N[1,] <- starts
   
   # Then simulate the random noise from a multivariate normal
-  e <- MASS::mvrnorm(n = parameters$n+100, 
+  e <- MASS::mvrnorm(n = n+burnin, 
                mu = c(0,0), 
-               Sigma = matrix(c(parameters$tau, 
-                                parameters$rho, 
-                                parameters$rho, 
-                                parameters$tau), 2, 2, byrow=T)) 
+               Sigma = matrix(c(tau, 
+                                rho, 
+                                rho, 
+                                tau), 2, 2, byrow=TRUE)) 
 
   # simulate the process of population change on log scale using Gompertz_func
   
-  # n+99 years so that the first 100 entries can be burnin
-  for(t in 1:(parameters$n+99)){
-    N[t+1,] <- exp(Gompertz_func(parameters$r_i,
-                           parameters$r_j,
-                           parameters$c_i, 
-                           parameters$c_j,
-                           log(N[t,1]), 
-                           log(N[t,2]), 
-                           e[t,1], 
-                           e[t,2],
-                           parameters$alpha_ij,
-                           parameters$alpha_ji))
+  # the first x entries are burnin
+  for(t in 1:(n+(burnin-1))){
+    N[t+1,] <- Gompertz_func(r = r,
+                                 N = N[t,],
+                                 e = e[t,], 
+                                 alphas = alphas)
   }
   
   # simulate observation process
-  for(t in 100:(99+parameters$n)){
-    Y_i[t-99] <- rpois(1, round(N[t,1])) # must be a whole number
-    Y_j[t-99] <- rpois(1, round(N[t,2]))
+  for(t in burnin:((burnin-1)+n)){
+    Y_i[t-(burnin-1)] <- rpois(1, round(exp(N[t,1]))) # must be a whole number
+    Y_j[t-(burnin-1)] <- rpois(1, round(exp(N[t,2])))
     
   }
   
   # DO NOT want a population to go extinct or too high in numbers
-  # next block of code checks that no population sizes simulated are <1 or
+  # next block of code checks that no population sizes simulated are < 1 or
   # > than a high number
-  checker <- c(Y_i, Y_j, N[100:(99+parameters$n),1], 
-               N[100:(99+parameters$n),2])
+  checker <- c(Y_i, Y_j, N[burnin:((burnin-1)+parameters$n),1], 
+               N[burnin:((burnin-1)+n),2])
+  
   test <- length(c(which(checker < 1),which(checker > 100000)))
+  
+  rep <- 1 # do not want it to continue forever - give 50 chances
   
   # If the test shows that any populations did not meet the criteria the 
   # simulation is repeated until the test is passed
-  while(test > 0){
-    e <- MASS::mvrnorm(n = parameters$n+100, 
-                 mu = c(0,0), 
-                 Sigma = matrix(c(parameters$tau, 
-                                  parameters$rho, 
-                                  parameters$rho, 
-                                  parameters$tau), 2, 2, byrow=T)) # error term
-    for(t in 1:(parameters$n+99)){
-      N[t+1,] <- exp(Gompertz_func(parameters$r_i,
-                             parameters$r_j,
-                             parameters$c_i, 
-                             parameters$c_j,
-                             log(N[t,1]), 
-                             log(N[t,2]), 
-                             e[t,1], 
-                             e[t,2],
-                             parameters$alpha_ij,
-                             parameters$alpha_ji))
+  
+  while(test > 0 &
+        rep < 50){
+    e <- MASS::mvrnorm(n = n+burnin, 
+                       mu = c(0,0), 
+                       Sigma = matrix(c(tau, 
+                                        rho, 
+                                        rho, 
+                                        tau), 2, 2, byrow=TRUE)) 
+    for(t in 1:(n+(burnin-1))){
+      N[t+1,] <- Gompertz_func(r = r,
+                                   N = N[t,],
+                                   e = e[t,], 
+                                   alphas = alphas)
     }
-    for(t in 100:(99+parameters$n)){
-      Y_i[t-99] <- rpois(1, round(N[t,1]))
-      Y_j[t-99] <- rpois(1, round(N[t,2]))
+    
+    # simulate observation process
+    for(t in burnin:((burnin-1)+n)){
+      Y_i[t-(burnin-1)] <- rpois(1, round(exp(N[t,1]))) # must be a whole number
+      Y_j[t-(burnin-1)] <- rpois(1, round(exp(N[t,2])))
       
     }
-    checker <- c(Y_i, Y_j, N[100:(99+parameters$n),1], 
-                 N[100:(99+parameters$n),2])
+    checker <- c(Y_i, Y_j, N[burnin:((burnin-1)+parameters$n),1], 
+                 N[burnin:((burnin-1)+n),2])
+    
     test <- length(c(which(checker < 1),which(checker > 100000)))
-    print(test)} # show how many years are failing
+    rep <- rep+1} 
     
   # Return both observed and true population sizes
   return(data.frame(
-    N_i = N[100:(99+parameters$n),1], N_j = N[100:(99+parameters$n),2],
+    N_i = exp(N[burnin:((burnin-1)+n),1]), 
+    N_j = exp(N[burnin:((burnin-1)+n),2]),
     Y_i = Y_i, Y_j = Y_j))
 }

@@ -18,11 +18,11 @@ source("Gompertz_function.R")
 
 # set them differently to check everything lines up
 r <- c(1, 1.25)
-N <- c(log(50), log(100))
+N <- c(3.3, 4.6)
 e <- c(0.1, 0.5)
 alpha_ionj <- -0.1
-alpha_joni <- 0.1
-alphas <- matrix(c(0.7, -0.1, 0.1, 0.8), 
+alpha_joni <- -0.1
+alphas <- matrix(c(0.7, -0.1, -0.1, 0.7), 
                  ncol = 2,
                  byrow = TRUE) # diagonal = intra-specific effects!!
 
