@@ -54,8 +54,8 @@ K <- log(120) # Carrying capacity
 a_i <- 0.6 # effect of j on i
 a_j <- -0.6 # effect of i on j
 c_i <- c_j <- 1+(-r_i/K) # calculate intra-specific competition
-alpha_ij <- (-ri*a_i)/K # calculate inter-specific effects
-alpha_ji <- (-rj*a_j)/K
+alpha_ij <- (-r_i*a_i)/K # calculate inter-specific effects
+alpha_ji <- (-r_j*a_j)/K
 
 # Store these parameters in a dataframe for input to Simulation_func
 

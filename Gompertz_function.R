@@ -5,25 +5,46 @@
 
 # Arguments:
 
-  # i and j = the interacting species
-  # r = intrinsic growth rate
-  # c = intra-specific competition
-  # N = log population size
-  # e = random noise
-  # alpha_ij = effect of species j on species i
-  # alpha_ji = effect of species i on species j
+  # r = intrinsic growth rate (vector of length = number of species)
+  # N = log population size (vector of length = number of species)
+  # e = random noise (vector of length = number of species)
+  # alphas = matrix with ncol = nrow = number of species 
 
+  # matrix is of the form where each row 
+  # contains the effects of a focal species on all others inc itself (diagonal)
 
-Gompertz_func <- function(r_i, r_j, 
-                          c_i, c_j, 
-                          N_i, N_j, 
-                          e_i, e_j, 
-                          alpha_ij, alpha_ji){
+Gompertz_func <- function(r = NULL, 
+                          N = NULL, 
+                          e = NULL, 
+                          alphas = NULL){
+  #### CHECKS
+  
+  # nothing is missing
+  
+  if(is.null(r)){stop("please supply a vector for r (intrinsic growth rate)")}
+  if(is.null(N)){stop("please supply a vector for N (starting abundance)")}
+  if(is.null(e)){stop("please supply a vector for e (noise)")}
+  if(is.null(alphas)){stop("please supply a matrix for alphas 
+                           (intra/interspecific interactions)")}
+  
+  # all elements are correct size
+  
+  if((length(r)==length(N) &
+     length(N)==length(e) &
+     length(e)==length(alphas)/2)==FALSE)
+  {stop("inputs are not the same length")}
+  
+  if(!is.matrix(alphas)){stop("alpha should be a matrix")}
+  
+  #### USE THE FUNCTION
   
   # simulate the value of Ni and Nj at t+1
   
-  N.new <- c(r_i + (c_i*N_i) + (alpha_ij*N_j) + e_i,
-             r_j + (c_j*N_j) + (alpha_ji*N_i) + e_j)
+  # generalise the equation so it can be used for many species
+  
+  interactions <- colSums(alphas*N)
+  
+  N.new <- r + interactions + e # r and e are vectors
   
   # return the new log population size values
   
