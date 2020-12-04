@@ -22,7 +22,7 @@ library(furrr) # allows parallel running
 
 #### Load simulated time series ####
 
-load("simulations_output_2020.RData")
+load("simulated_TS_2020.RData")
 
 ###############################################################################
 
@@ -43,6 +43,8 @@ code <- nimbleCode({
   r_j ~ T(dnorm(1.5, sd = 1), 0, 10)
   c_i ~ T(dnorm(0.5, sd = 10), 0, 10) 
   c_j ~ T(dnorm(0.5, sd = 10), 0, 10)
+  alpha_ij ~ dnorm(0, 0.1)
+  alpha_ji ~ dnorm(0, 0.1)
   
   mu[1, 1] ~ dnorm(6, 1) # means of log population size at t+1
   mu[1, 2] ~ dnorm(6, 1)
@@ -83,21 +85,20 @@ constants <- list(n=n, M=2)
 
 inits <- list(r_i = 1, r_j = 1, 
               c_i = 0.5, c_j = 0.5, 
+              alpha_ij = 0, alpha_ji = 0,
               prec = matrix(c(1,0,0,1),2,2),
               N = matrix(c(6,6),n,2),
               mu = matrix(rep(6,(n*2)),n,2),
-              Rho = matrix(c(1,0,0,1),2,2))
+              Rho = matrix(c(1,0,0,1),2,2)
+              )
 
 # DATA
 
-# set up grid of alpha values
-
-alphas <- as.matrix(expand_grid(alphaij = seq(-1,1,length.out = 5),
-                                alphaji = seq(-1,1,length.out = 5)))
+# this is naive model with no grid of alphas
 
 data <- list(Y_i = (round(exp(simulations_all[[1]]$Y_i))), 
-             Y_j = (round(exp(simulations_all[[1]]$Y_j))),
-             alpha_ij = alphas[1,1], alpha_ji = alphas[1,2])
+             Y_j = (round(exp(simulations_all[[1]]$Y_j))))
+             #alpha_ij = alphas[1,1], alpha_ji = alphas[1,2])
 
 ###############################################################################
 
@@ -121,8 +122,9 @@ CmodelS1$calculate() # check likelihood is still the same
 # it was identified in early analyses that these are correlated
 # setting up covariance allows block sampling
 
-cov1 <- cov2 <- matrix(c(0.003, -0.0015,
-                         -0.0015, 0.003), nrow=2, ncol=2, byrow=T)
+cov1 <- cov2 <- matrix(c(0.003, -0.0015, 0.0025,
+                         -0.0015, 0.003, -0.0015,
+                         0.0025, -0.0015, 0.003), nrow=3, ncol=3, byrow=T)
 
 # configure
 
@@ -132,14 +134,15 @@ confS1 <- configureMCMC(RmodelS1)
 
 # remove old
 
-confS1$removeSamplers(c('c_i', 'c_j', 'r_i', 'r_j'))
+confS1$removeSamplers(c('alpha_ij', 'alpha_ji', 'c_i', 'c_j', 'r_i', 'r_j'))
 
 # add the new ones
 
-confS1$addSampler(target = c('c_j', 'r_j'),
+confS1$addSampler(target = c('alpha_ji', 'c_j', 'r_j'),
                   type = 'RW_block',
                   propCov = cov1)
-confS1$addSampler(target = c('c_i', 'r_i'),
+
+confS1$addSampler(target = c('alpha_ij', 'c_i', 'r_i'),
                   type = 'RW_block', 
                   propCov = cov2)
 
@@ -153,9 +156,7 @@ RmcmcS1 <- buildMCMC(confS1)
 
 CmcmcS1 <- compileNimble(mcmc=RmcmcS1)
 
-# split alpha grid to be a list to use in map()
-
-alphas <- split(alphas, seq(nrow(alphas)))
+# set off naive model
 
 #### Run the model for single scenarios ####
 
@@ -163,13 +164,12 @@ tic() # starts a timer
 
 # Run Nimble model across all alphas for a SINGLE scenario
 
-Scenario1Samples <- map(.x = alphas, ~{
-  CmodelS1$setData(list(
-    alpha_ij = .x[1], alpha_ji = .x[2]))
+Scenario1Samples <- map2(.x = simulations_all, ~{
+  CmodelS1$setData(list(Yi = round(.x$Yi), Yj = round(.x$Yj)))
   runMCMC(CmcmcS1, 
-          niter = 50000, 
-          nburnin = 5000,
-          thin = 100,
+          niter = 10000, 
+          nburnin = 1000,
+          thin = 0,
           nchains = 3,
           summary = TRUE, 
           samples = TRUE,

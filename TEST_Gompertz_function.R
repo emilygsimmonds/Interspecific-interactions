@@ -22,6 +22,7 @@ source("Gompertz_function.R")
 r <- c(1, 1.25)
 N <- c(3.3, 4.6)
 e <- c(0.1, 0.5)
+
 alpha_ionj <- -0.1
 alpha_joni <- 0.1
 
@@ -134,4 +135,5 @@ if(Gompertz_func(r = r, N = N, e = e, alphas = alphas)[1] ==
 
 if(Gompertz_func(r = r, N = N, e = e, alphas = alphas)[2] ==
    (r[2] + (alphas[2,2]*N[2]) + (alpha_ionj*N[1]) + e[2])){print("double YAY")}
+
 
