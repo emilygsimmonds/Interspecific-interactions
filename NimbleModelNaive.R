@@ -1,28 +1,30 @@
 # This script runs a Nimble model to quantify inter-specific interaction 
 # strength using the simulated time series
 
+# The model is naive i.e. not the gridded approach
+
+# runs model for ALL elements of a list of datafiles
+
 ###############################################################################
 
 # If you open in RStudio go to Edit > Folding > Collapse all
 
 ###############################################################################
 
+run_naive_nimble_model <- function(simulations_all){
+
 # Set up
 
 #### Load required packages ####
 
-library(igraph) # required for Nimble
-library(coda) # needed to extract some outputs
-library(nimble) # to run the models
-library(devtools) # needed to install nimble
-library(tictoc) # times code chunks
-library(tidyverse) # for data manipulation and plotting
-library(data.table) # to manipulate tables
-library(furrr) # allows parallel running
-
-#### Load simulated time series ####
-
-load("simulated_TS_2020.RData")
+require(igraph) # required for Nimble
+require(coda) # needed to extract some outputs
+require(nimble) # to run the models
+require(devtools) # needed to install nimble
+require(tictoc) # times code chunks
+require(tidyverse) # for data manipulation and plotting
+require(data.table) # to manipulate tables
+require(furrr) # allows parallel running
 
 ###############################################################################
 
@@ -39,8 +41,8 @@ code <- nimbleCode({
   ## priors for parameters
   
   # truncated normal used when parameter cannot be < 0
-  r_i ~ T(dnorm(1.5, sd = 1), 0, 10) 
-  r_j ~ T(dnorm(1.5, sd = 1), 0, 10)
+  r_i ~ T(dnorm(1, sd = 1), 0, 10) 
+  r_j ~ T(dnorm(1, sd = 1), 0, 10)
   c_i ~ T(dnorm(0.5, sd = 10), 0, 10) 
   c_j ~ T(dnorm(0.5, sd = 10), 0, 10)
   alpha_ij ~ dnorm(0, 0.1)
@@ -98,7 +100,6 @@ inits <- list(r_i = 1, r_j = 1,
 
 data <- list(Y_i = (round(exp(simulations_all[[1]]$Y_i))), 
              Y_j = (round(exp(simulations_all[[1]]$Y_j))))
-             #alpha_ij = alphas[1,1], alpha_ji = alphas[1,2])
 
 ###############################################################################
 
@@ -108,15 +109,9 @@ data <- list(Y_i = (round(exp(simulations_all[[1]]$Y_i))),
 
 RmodelS1 <- nimbleModel(code, constants, data, inits)
 
-# check the model 
-
-RmodelS1$initializeInfo() # check everything initialised
-RmodelS1$calculate() # calculate likelihood based on initial values
-
 # compile in C
 
 CmodelS1 <- compileNimble(RmodelS1) # this compiles the model in C++
-CmodelS1$calculate() # check likelihood is still the same
 
 # set up covariance matrix for parameters (r and c)
 # it was identified in early analyses that these are correlated
@@ -164,12 +159,11 @@ tic() # starts a timer
 
 # Run Nimble model across all alphas for a SINGLE scenario
 
-Scenario1Samples <- map2(.x = simulations_all, ~{
-  CmodelS1$setData(list(Yi = round(.x$Yi), Yj = round(.x$Yj)))
+ScenarioSamples <- map(.x = simulations_all, ~{
+  CmodelS1$setData(list(Y_i = round(.x$Y_i), Y_j = round(.x$Y_j)))
   runMCMC(CmcmcS1, 
           niter = 10000, 
           nburnin = 1000,
-          thin = 0,
           nchains = 3,
           summary = TRUE, 
           samples = TRUE,
@@ -178,37 +172,7 @@ Scenario1Samples <- map2(.x = simulations_all, ~{
 
 toc() # print time taken
 
-###############################################################################
+return(ScenarioSamples)
 
-# This code runs the model for many scenarios - but would take ages!
-
-#### Run model for multiple scenarios ####
-
-# make a list of all simulated time series repeated same number as number of 
-# alphas
-
-simulationsGrid <- rep(simulations_all, each = 25)
-
-# set up plan for cores
-
-plan(multicore(workers = 2))
-
-tic() # starts a timer
-
-ScenarioSamplesCC <- future_map2(.x = alphasGrid[1:2500], 
-                                 .y = simulationsGrid[1:2500], ~{
-  CmodelS1$setData(list(Y_i = (round(exp(.y$Y_i))), 
-                        Y_j = (round(exp(.y$Y_j))),
-                        alpha_ij = .x[1], alpha_ji = .x[2]))
-  runMCMC(CmcmcS1, 
-          niter = 50000, 
-          nburnin = 5000,
-          thin = 100,
-          nchains = 3,
-          summary = TRUE, 
-          samples = TRUE,
-          samplesAsCodaMCMC = TRUE)
-}, CmodelS1, CmcmcS1, .progress=TRUE)
-
-toc() # print time taken
+}
 
