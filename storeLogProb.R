@@ -1,3 +1,6 @@
+### From Perry de Valpine on nimble users forum
+# https://groups.google.com/g/nimble-users/c/PAB9afufYxw/m/d6sn4sgcAgAJ
+
 # A proxy "sampler" that isn't really an MCMC sampler but will be called
 # in the list of samplers.  It will store the sum of nodes give in control$logProbNodes
 # in the target node.
