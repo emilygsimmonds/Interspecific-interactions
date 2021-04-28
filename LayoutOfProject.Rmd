@@ -10,17 +10,25 @@ quantification of interspecific interactions from time series data.
 
 In this project I will look at three types of interaction:
 
-- Predator/prey (-/+)
-- Competitive (-/-)
-- Mutualist (+/+)
+* Predator/prey (-/+)
+* Competitive (-/-)
+* Mutualist (+/+)
+
+There are also four scenarios:
+
+* Baseline - equal interaction strengths
+* Unequal - unequal interaction strengths
+* Noise - 1 = higher noise equal interactions , 2 = higher noise unequal interactions
+* Correlation - changing of correlation in environmental noise from 0.3 to 0.9
 
 ## Details of the study
 
-The simulation study has four steps:
+The simulation study has five steps:
 
 1) Generate simulations of species time series data
 2) Run a Nimble model for the simulated data
 3) Run an INLA model for the simulated data
+4) Run a gridded Nimble model for the simulated data
 4) Evaluate the model performances
 
 More detail on each step (including the scripts required to run it) are given 
@@ -37,26 +45,59 @@ To do this, I use the following equations (Gompertz equations on the log-linear
 scale):
 
 $$
-Y_i \~ Pois(exp(N_i))
+Y_i \sim Pois(exp(N_i))
 $$
 $$
 N_i = r_i + c_i N_i + \alpha_{ij} N_j + e_i
 $$
 
 $$
-Y_j \~ Pois(exp(N_j))
+Y_j \sim Pois(exp(N_j))
 $$
 $$
 N_j = r_j + c_j N_j + \alpha_{ji} N_i + e_j
 $$
 
-where, $N$ = log actual population size, $r$ = intrinsic growth rate, 
-$c$ = intraspecific competition (density dependence), 
-$/alpha$ = interspecific effect, 
-$e$ = random error. 
+$$
+e \sim W_p(V, n)
+$$
+
+$$
+\begin{gather}
+V =   
+\begin{bmatrix}
+   \sigma^2_{ii} &
+   cov_{ij} \\
+   cov_{ji} &
+   \sigma^2_{jj} 
+   \end{bmatrix}
+\end{gather}
+$$
+
+where, 
+
+$N$ = log actual population size, 
+
+$r$ = intrinsic growth rate, 
+
+$c$ = intraspecific competition (density dependence),
+
+$\alpha$ = interspecific effect, 
+
+$e$ = matrix of random error with rows $i$ and $j$
+
+$n$ = degrees of freedom ($p$ -1)
+
+$p$ = 2
+
+$V$ = a variance covariance matrix.
+
+<br>
 
 Both the true population size and the observed population size including 
 Poisson error are output. 
+
+<br>
 
 I simulate populations using the following baseline parameter values:
 
@@ -66,23 +107,68 @@ I simulate populations using the following baseline parameter values:
 
 The values of alpha depend on the type of interaction:
 
-- Predator/prey: $\alpha_{ij}$ = -0.16, $\alpha_{ji}$ = 0.16
-- Competitive: $\alpha_{ij}$ = $\alpha_{ji}$ = 0.13
-- Mutulaist: $\alpha_{ij}$ = $\alpha_{ji}$ = -0.18
+- Predator/prey: $\alpha_{ij}$ = 0.129, $\alpha_{ji}$ = -0.129
+- Competitive: $\alpha_{ij}$ = $\alpha_{ji}$ = -0.129
+- Mutulaist: $\alpha_{ij}$ = $\alpha_{ji}$ = 0.129
+
+<br>
 
 ### Run a Nimble model for the simulated data
 
-The Nimble model is run using the script [NimbleModel.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/NimbleModel.R) using the output
+The Nimble model is run using the script [NimbleModelNaive.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/NimbleModelNaive.R) using the output
 from [Simulation_creation.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_creation.R). 
 
-This uses a gridded approach to estimating the $\alpha$ values (inter-specific
-interactions). These parameters proved hard to estimate using MCMC. 
+This uses a naive approach to fit the model and estimates the $\alpha$ values with
+MCMC. 
 
 For anyone that does not know Nimble, there is a cheatsheet [here:](https://r-nimble.org/cheatsheets/NimbleCheatSheet.pdf). Nimble runs in 
 C++ and requires a C++ compiler to be installed. Instructions to install can be 
 found [here:](https://r-nimble.org/html_manual/cha-installing-nimble.html).
 
+<br>
+
+### Run a Gridded Nimble model for the simulated data
+
+The Nimble model is run using the script [NimbleModelGridded.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/NimbleModelGridded.R) using the output
+from [Simulation_creation.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_creation.R). 
+
+This uses a gridded approach to estimating the $\alpha$ values (inter-specific
+interactions). These parameters proved hard to estimate using MCMC. 
+
+<br>
+
 ### Run an INLA model for the simulated data
 
-The INLA model is run using the script [INLAModel.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/INLAModel.R) using the output
+The INLA model [runINLAModel.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/runINLAModel.R) is run using the script using the output
 from [Simulation_creation.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_creation.R). 
+
+To run this in parallel use this wrapper function [INLAModel.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/INLAModel.R). 
+
+<br>
+
+### Test scripts
+
+I set up some scripts to test different parts. These are:
+
+[TEST_Gompertz_formulations.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/TEST_Gompertz_formulations.R)
+
+[TEST_Gompertz_function.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/TEST_Gompertz_function.R)
+
+[TEST_Simulation_function.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/TEST_Simulation_function.R)
+
+[Test_INLA.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Test_INLA.R)
+
+<br>
+
+### These scripts run all models for a particular scenario
+
+[Baseline](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Baseline_Scenario.R)
+
+[Unequal](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Unequal_Scenario.R)
+
+[Noise](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Noise_scenario.R)
+
+[Correlation](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Corr_Scenario.R)
+
+
+
