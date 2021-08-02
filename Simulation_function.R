@@ -40,7 +40,8 @@ Simulation_func <- function(n = 100,
                             rho = NULL, 
                             burnin = 100,
                             seed = NULL,
-                            maxiter = 50){
+                            maxiter = 50,
+                            prevent_extinction = TRUE){
   
   #### CHECKS
   
@@ -105,6 +106,8 @@ Simulation_func <- function(n = 100,
                N[(2+burnin):(burnin+n+1),2])
   
   test <- length(c(which(checker < 1),which(checker > 100000)))
+  
+  if(prevent_extinction == FALSE){test <- 0}
   
   rep <- 1 # do not want it to continue forever - give 50 chances
   

@@ -80,7 +80,9 @@ $N$ = log actual population size,
 
 $r$ = intrinsic growth rate, 
 
-$c$ = intraspecific competition (density dependence),
+$b$ = intra-specific competition (density dependence)
+
+$c$ = $b$ + 1,
 
 $\alpha$ = interspecific effect, 
 
@@ -103,7 +105,7 @@ I simulate populations using the following baseline parameter values:
 
 - starting population size = 100
 - $r_i$ = $r_j$ = 1.25
-- $c_i$ = $c_j$ = 0.74
+- $b_i$ = $b_j$ = 0.74
 
 The values of alpha depend on the type of interaction:
 
