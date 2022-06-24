@@ -28,7 +28,6 @@ The simulation study has five steps:
 1) Generate simulations of species time series data
 2) Run a Nimble model for the simulated data
 3) Run an INLA model for the simulated data
-4) Run a gridded Nimble model for the simulated data
 4) Evaluate the model performances
 
 More detail on each step (including the scripts required to run it) are given 
@@ -48,23 +47,30 @@ $$
 Y_i \sim Pois(exp(N_i))
 $$
 $$
-N_i = r_i + c_i N_i + \alpha_{ij} N_j + e_i
+N_i = r_i + (1+\alpha_{ii}) N_i + \alpha_{ji} N_j + e_i
 $$
 
 $$
 Y_j \sim Pois(exp(N_j))
 $$
 $$
-N_j = r_j + c_j N_j + \alpha_{ji} N_i + e_j
+N_j = r_j + (1+\alpha_{jj}) N_j + \alpha_{ij} N_i + e_j
 $$
 
 $$
-e \sim W_p(V, n)
+e \sim N(\mu, V)
+$$
+$$
+\mu = \begin{gather}
+\begin{bmatrix}
+0 & \\
+0
+\end{bmatrix}
+\end{gather}
 $$
 
 $$
-\begin{gather}
-V =   
+V = \begin{gather}
 \begin{bmatrix}
    \sigma^2_{ii} &
    cov_{ij} \\
@@ -80,19 +86,11 @@ $N$ = log actual population size,
 
 $r$ = intrinsic growth rate, 
 
-$b$ = intra-specific competition (density dependence)
-
-$c$ = $b$ + 1,
-
-$\alpha$ = interspecific effect, 
+$\alpha$ = intra and inter specific effects,
 
 $e$ = matrix of random error with rows $i$ and $j$
 
-$n$ = degrees of freedom ($p$ -1)
-
-$p$ = 2
-
-$V$ = a variance covariance matrix.
+$Y$ = observed population size
 
 <br>
 
@@ -101,19 +99,9 @@ Poisson error are output.
 
 <br>
 
-I simulate populations using the following baseline parameter values:
+### Script to choose parameter values
 
-- starting population size = 100
-- $r_i$ = $r_j$ = 1.25
-- $b_i$ = $b_j$ = 0.74
-
-The values of alpha depend on the type of interaction:
-
-- Predator/prey: $\alpha_{ij}$ = 0.129, $\alpha_{ji}$ = -0.129
-- Competitive: $\alpha_{ij}$ = $\alpha_{ji}$ = -0.129
-- Mutulaist: $\alpha_{ij}$ = $\alpha_{ji}$ = 0.129
-
-<br>
+[CHOOSE_parameters.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/CHOOSE_parameters.R)
 
 ### Run a Nimble model for the simulated data
 
@@ -126,16 +114,6 @@ MCMC.
 For anyone that does not know Nimble, there is a cheatsheet [here:](https://r-nimble.org/cheatsheets/NimbleCheatSheet.pdf). Nimble runs in 
 C++ and requires a C++ compiler to be installed. Instructions to install can be 
 found [here:](https://r-nimble.org/html_manual/cha-installing-nimble.html).
-
-<br>
-
-### Run a Gridded Nimble model for the simulated data
-
-The Nimble model is run using the script [NimbleModelGridded.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/NimbleModelGridded.R) using the output
-from [Simulation_creation.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_creation.R). 
-
-This uses a gridded approach to estimating the $\alpha$ values (inter-specific
-interactions). These parameters proved hard to estimate using MCMC. 
 
 <br>
 
@@ -172,5 +150,6 @@ I set up some scripts to test different parts. These are:
 
 [Correlation](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Corr_Scenario.R)
 
+### A new script looks at switching off the interspecific interactions
 
-
+[Intra:Inter_results.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Intra:Inter_results.R)
