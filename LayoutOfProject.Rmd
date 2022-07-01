@@ -1,66 +1,74 @@
 ---
 output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
+
 # Interspecific-interactions
 
 ## Introduction to the project
 
-This repository holds all of the code for a simulation study into the 
+This repository holds all of the code for a simulation study into the
 quantification of interspecific interactions from time series data.
 
 In this project I will look at three types of interaction:
 
-* Predator/prey (-/+)
-* Competitive (-/-)
-* Mutualist (+/+)
+-   Predator/prey (-/+)
+-   Competitive (-/-)
+-   Mutualist (+/+)
 
 There are also four scenarios:
 
-* Baseline - equal interaction strengths
-* Unequal - unequal interaction strengths
-* Noise - 1 = higher noise equal interactions , 2 = higher noise unequal interactions
-* Correlation - changing of correlation in environmental noise from 0.3 to 0.9
+-   Baseline - equal interaction strengths
+-   Unequal - unequal interaction strengths
+-   Noise - 1 = higher noise equal interactions , 2 = higher noise
+    unequal interactions
+-   Correlation - changing of correlation in environmental noise from
+    0.3 to 0.9
 
 ## Details of the study
 
 The simulation study has five steps:
 
-1) Generate simulations of species time series data
-2) Run a Nimble model for the simulated data
-3) Run an INLA model for the simulated data
-4) Evaluate the model performances
+1)  Generate simulations of species time series data
+2)  Run a Nimble model for the simulated data
+3)  Run an INLA model for the simulated data
+4)  Evaluate the model performances
 
-More detail on each step (including the scripts required to run it) are given 
-below.
+More detail on each step (including the scripts required to run it) are
+given below.
 
 ### Generate simulations of time series data
 
-This is done in the [Simulation_creation.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_creation.R) script, which uses the [Gompertz_function.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Gompertz_function.R) function and the [Simulation_function.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_function.R). 
+This is done in the
+[Simulation_creation.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_creation.R)
+script, which uses the
+[Gompertz_function.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Gompertz_function.R)
+function and the
+[Simulation_function.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_function.R).
 
-I simultaneously simulate two time series of observed population size ($Y$) 
-for species $i$ and species $j$ and the log population size. 
+I simultaneously simulate two time series of observed population size
+($Y$) for species $i$ and species $j$ and the log population size.
 
-To do this, I use the following equations (Gompertz equations on the log-linear 
-scale):
+To do this, I use the following equations (Gompertz equations on the
+log-linear scale):
 
 $$
 Y_i \sim Pois(exp(N_i))
-$$
-$$
+$$ $$
 N_i = r_i + (1+\alpha_{ii}) N_i + \alpha_{ji} N_j + e_i
 $$
 
 $$
 Y_j \sim Pois(exp(N_j))
-$$
-$$
+$$ $$
 N_j = r_j + (1+\alpha_{jj}) N_j + \alpha_{ij} N_i + e_j
 $$
 
 $$
 e \sim N(\mu, V)
-$$
-$$
+$$ $$
 \mu = \begin{gather}
 \begin{bmatrix}
 0 & \\
@@ -80,11 +88,11 @@ V = \begin{gather}
 \end{gather}
 $$
 
-where, 
+where,
 
-$N$ = log actual population size, 
+$N$ = log actual population size,
 
-$r$ = intrinsic growth rate, 
+$r$ = intrinsic growth rate,
 
 $\alpha$ = intra and inter specific effects,
 
@@ -94,8 +102,8 @@ $Y$ = observed population size
 
 <br>
 
-Both the true population size and the observed population size including 
-Poisson error are output. 
+Both the true population size and the observed population size including
+Poisson error are output.
 
 <br>
 
@@ -105,24 +113,31 @@ Poisson error are output.
 
 ### Run a Nimble model for the simulated data
 
-The Nimble model is run using the script [NimbleModelNaive.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/NimbleModelNaive.R) using the output
-from [Simulation_creation.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_creation.R). 
+The Nimble model is run using the script
+[NimbleModelNaive.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/NimbleModelNaive.R)
+using the output from
+[Simulation_creation.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_creation.R).
 
-This uses a naive approach to fit the model and estimates the $\alpha$ values with
-MCMC. 
+This uses a naive approach to fit the model and estimates the $\alpha$
+values with MCMC.
 
-For anyone that does not know Nimble, there is a cheatsheet [here:](https://r-nimble.org/cheatsheets/NimbleCheatSheet.pdf). Nimble runs in 
-C++ and requires a C++ compiler to be installed. Instructions to install can be 
-found [here:](https://r-nimble.org/html_manual/cha-installing-nimble.html).
+For anyone that does not know Nimble, there is a cheatsheet
+[here:](https://r-nimble.org/cheatsheets/NimbleCheatSheet.pdf). Nimble
+runs in C++ and requires a C++ compiler to be installed. Instructions to
+install can be found
+[here:](https://r-nimble.org/html_manual/cha-installing-nimble.html).
 
 <br>
 
 ### Run an INLA model for the simulated data
 
-The INLA model [runINLAModel.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/runINLAModel.R) is run using the script using the output
-from [Simulation_creation.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_creation.R). 
+The INLA model
+[runINLAModel.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/runINLAModel.R)
+is run using the script using the output from
+[Simulation_creation.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/Simulation_creation.R).
 
-To run this in parallel use this wrapper function [INLAModel.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/INLAModel.R). 
+To run this in parallel use this wrapper function
+[INLAModel.R](https://github.com/emilygsimmonds/Interspecific-interactions/blob/main/INLAModel.R).
 
 <br>
 
