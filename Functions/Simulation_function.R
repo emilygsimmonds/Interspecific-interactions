@@ -11,7 +11,7 @@
 #### Source required user built functions ####
 
 # function to simulate a single year of population sizes
-source("./Gompertz_function.R")
+source("./Functions/Gompertz_function.R")
 
 
 ###############################################################################
@@ -74,12 +74,21 @@ Simulation_func <- function(n = 100,
   N[1,] <- log(starts)
   
   # Then simulate the random noise from a multivariate normal
+  if(length(tau) == 1){
   e <- MASS::mvrnorm(n = n+burnin, 
                mu = c(0,0), 
                Sigma = matrix(c(tau, 
                                 rho, 
                                 rho, 
-                                tau), 2, 2, byrow=TRUE)) 
+                                tau), 2, 2, byrow=TRUE))}
+  if(length(tau) == 2){
+    e <- MASS::mvrnorm(n = n+burnin, 
+                       mu = c(0,0), 
+                       Sigma = matrix(c(tau[1], 
+                                        rho[1], 
+                                        rho[2], 
+                                        tau[2]), 2, 2, byrow=TRUE))}
+  
 
   # simulate the process of population change on log scale using Gompertz_func
   
@@ -116,12 +125,21 @@ Simulation_func <- function(n = 100,
   
   while(test > 0 &
         rep < maxiter){
-    e <- MASS::mvrnorm(n = n+burnin, 
-                       mu = c(0,0), 
-                       Sigma = matrix(c(tau, 
-                                        rho, 
-                                        rho, 
-                                        tau), 2, 2, byrow=TRUE)) 
+    if(length(tau) == 1){
+      e <- MASS::mvrnorm(n = n+burnin, 
+                         mu = c(0,0), 
+                         Sigma = matrix(c(tau, 
+                                          rho, 
+                                          rho, 
+                                          tau), 2, 2, byrow=TRUE))}
+    if(length(tau) == 2){
+      e <- MASS::mvrnorm(n = n+burnin, 
+                         mu = c(0,0), 
+                         Sigma = matrix(c(tau[1], 
+                                          rho[1], 
+                                          rho[2], 
+                                          tau[2]), 2, 2, byrow=TRUE))}
+    
     for(t in 2:(n+burnin+1)){
       N[t,] <- Gompertz_func(r = r,
                              N = N[t-1,],
