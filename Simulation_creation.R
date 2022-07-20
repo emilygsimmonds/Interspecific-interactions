@@ -16,7 +16,7 @@ require(tidyverse)
 #### Source user defined functions ####
 
 # function to iterate the simulation
-source("./Simulation_function.R")
+source("./Functions/Simulation_function.R")
 # uses the Gompertz_function.R
 
 ###############################################################################
@@ -78,7 +78,7 @@ simulations_output_m <- purrr::rerun(100,
                                   starts = log(starts),
                                   r = r,
                                   alphas = alphas_m,
-                                  tau=tau, 
+                                  tau = tau, 
                                   rho = rho,
                                   burnin = 50)) 
 # PREDATOR-PREY
@@ -971,3 +971,151 @@ simulations_all <- c(simulations_output_c,
 save(simulations_all, file="simulated_TS_CORR3_2021.2.RData")
 
 
+
+
+###############################################################################
+
+#### BASELINE SCENARIO UNCONSTRAINED ####
+
+r <- c(1, 1) # intrinsic growth rates
+K <- log(100) # Carrying capacities
+a_joni <- -0.5 # effect of j on i
+a_ionj <- -0.5 # effect of i on j
+c_i <- 1+(-r[1]/K)
+c_j <- 1+(-r[2]/K) # calculate intra-specific competition
+tau <- 0.05 
+corr <- 0.7
+rho <- corr*tau # correlation = rho/tau
+
+# make a dataframe of true parameters
+
+true_baseline <- data.frame(r_i = rep(1, 300),
+                            r_j = rep(1, 300),
+                            c_i = rep(c_i, 300),
+                            c_j = rep(c_j, 300),
+                            alpha_ionj = rep(NA, 300),
+                            alpha_joni = rep(NA, 300),
+                            tau_i = rep(tau, 300),
+                            tau_j = rep(tau, 300),
+                            Rho = rep(rho, 300),
+                            interaction = c(rep("m", 100),
+                                            rep("p", 100),
+                                            rep("c", 100)),
+                            scenario = "Baseline")
+
+# MUTUALISM - negative to begin
+
+r <- c(1, 1) # intrinsic growth rates
+K <- log(50) # Carrying capacities
+a_joni <- -0.1 # effect of j on i
+a_ionj <- -0.1 # effect of i on j
+c_i <- 1+(-r[1]/K)
+c_j <- 1+(-r[2]/K) # calculate intra-specific competition
+true_baseline$alpha_ionj[1:100] <- alpha_ionj <- (-r[1]*a_ionj)/K # calculate inter-specific effects
+true_baseline$alpha_joni[1:100] <- alpha_joni <- (-r[2]*a_joni)/K
+
+# now combine c and alphas into a single matrix
+alphas_m <- matrix(c(c_i, alpha_ionj, alpha_joni, c_j), 
+                   ncol = 2,
+                   byrow = TRUE)
+
+# Create other inputs for Simulation_func
+
+n <- 50
+starts <- c(100,100)
+tau <- 0.05
+corr <- 0.7
+rho <- corr*tau # correlation = rho/tau
+
+simulations_output_m <- purrr::rerun(100*100, 
+                                     Simulation_func(n = n,
+                                                     starts = log(starts),
+                                                     r = r,
+                                                     alphas = alphas_m,
+                                                     tau = tau, 
+                                                     rho = rho,
+                                                     burnin = 50,
+                                                     prevent_extinction = FALSE)) 
+# PREDATOR-PREY
+
+r <- c(1, 1) # intrinsic growth rates
+K <- c(log(50), log(100)) # Carrying capacities
+a_joni <- -0.25 # effect of j on i
+a_ionj <- 0.25 # effect of i on j
+c_i <- 1+(-r[1]/K[1])
+c_j <- 1+(-r[2]/K[2]) # calculate intra-specific competition
+tau <- 0.05
+corr <- 0.7
+rho <- corr*tau # correlation = rho/tau
+true_baseline$alpha_ionj[101:200] <- alpha_ionj <- (-r[1]*a_ionj)/K[1] # calculate inter-specific effects
+true_baseline$alpha_joni[101:200] <- alpha_joni <- (-r[2]*a_joni)/K[2]
+
+# now combine c and alphas into a single matrix
+alphas_p <- matrix(c(c_i, alpha_ionj, alpha_joni, c_j), 
+                   ncol = 2,
+                   byrow = TRUE)
+
+# Create other inputs for Simulation_func
+
+n <- 50
+starts <- c(100,100)
+corr <- 0.7
+rho <- corr*tau # correlation = rho/tau
+
+simulations_output_p <- purrr::rerun(100*100, 
+                                     Simulation_func(n = n,
+                                                     starts = log(starts),
+                                                     r = r,
+                                                     alphas = alphas_p,
+                                                     tau=tau, 
+                                                     rho = rho,
+                                                     burnin = 50,
+                                                     maxiter = 100,
+                                                     prevent_extinction = FALSE)) 
+
+# COMPETITION
+
+r <- c(1, 1) # intrinsic growth rates
+K <- log(100) # Carrying capacities
+a_joni <- 0.5 # effect of j on i
+a_ionj <- 0.5 # effect of i on j
+c_i <- 1+(-r[1]/K)
+c_j <- 1+(-r[2]/K) # calculate intra-specific competition
+true_baseline$alpha_ionj[201:300] <- alpha_ionj <- (-r[1]*a_ionj)/K # calculate inter-specific effects
+true_baseline$alpha_joni[201:300] <- alpha_joni <- (-r[2]*a_joni)/K
+
+# now combine c and alphas into a single matrix
+alphas_c <- matrix(c(c_i, alpha_ionj, alpha_joni, c_j), 
+                   ncol = 2,
+                   byrow = TRUE)
+
+# Create other inputs for Simulation_func
+
+n <- 50
+starts <- c(100,100)
+tau <- 0.05
+corr <- 0.7
+rho <- corr*tau # correlation = rho/tau
+
+simulations_output_c <- purrr::rerun(100*100, 
+                                     Simulation_func(n = n,
+                                                     starts = log(starts),
+                                                     r = r,
+                                                     alphas = alphas_c,
+                                                     tau=tau, 
+                                                     rho = rho,
+                                                     burnin = 50,
+                                                     maxiter = 50,
+                                                     prevent_extinction = FALSE)) 
+
+
+#### Combine and save ####
+
+simulations_all <- c(simulations_output_c, 
+                     simulations_output_m, 
+                     simulations_output_p)
+
+save(simulations_all, file="simulated_TS_UNCONSTRAINED.RData")
+
+
+###############################################################################

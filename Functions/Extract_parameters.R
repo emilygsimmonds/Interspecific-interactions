@@ -18,7 +18,7 @@
 Extract_parameters <- function(Results,
                                n = 100,
                                starts = NULL,
-                               burnin = 100,
+                               burnin = 50,
                                seed = NULL,
                                maxiter = 50,
                                prevent_extinction = TRUE){
@@ -39,10 +39,11 @@ c <- c(Results$Mean[Results$label == "c_i"],
 tau <- c(Results$Mean[Results$label == "tau_i"],
          Results$Mean[Results$label == "tau_j"])
 
-if(Results$model == "nimble"){
+if(Results$model[1] == "nimble"){
 rho <- c(Results$Mean[Results$label == "prec[2, 1]"],
-           Results$Mean[Results$label == "prec[1, 2"])}else{
-rho <- Results$Mean[Results$label == "Rho"]        
+           Results$Mean[Results$label == "prec[1, 2]"])}else{
+rho <- c(Results$Mean[Results$label == "Rho"], 
+         Results$Mean[Results$label == "Rho"])       
            }
 alpha_matrix <- matrix(c(c[1], Results$Mean[Results$label == "alpha_ionj"],
                          Results$Mean[Results$label == "alpha_joni"], c[2]), 

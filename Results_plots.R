@@ -4,6 +4,26 @@
 
 #### plot results ####
 
+### raw estimates ###
+
+raw <- results_baseline_all %>% 
+  drop_na(error) %>%
+  mutate(label = as.factor(label))
+
+ggplot(data = filter(raw, label == "alpha_ionj" |
+                       label == "alpha_joni"), 
+       aes(y = Mean, x = interaction_type, fill = model))+
+  geom_violin(stat = "ydensity", alpha = 0.5) +
+  geom_hline(yintercept = 0)+
+  facet_grid(cols = vars(interaction_type), rows = vars(label),
+             scales = "free_x") +
+  labs(title = "baseline results: mean",
+       y = "estimate",
+       x = "interaction type") +
+  theme_minimal() 
+
+ggsave(last_plot(), file = "./Figures/baseline_raw.png")
+
 ### % sign correct ###
 
 sign_correct_b <- sign_correct <- results_baseline_all %>% 
@@ -29,7 +49,7 @@ ggplot(data = filter(sign_correct,
                        labels = c("R-INLA", "Nimble")) +
   theme_minimal()
 
-ggsave(last_plot(), file = "baseline_sign_correct.png")
+ggsave(last_plot(), file = "./Figures/baseline_sign_correct.png")
 
 
 ### % sign clear###
@@ -56,12 +76,12 @@ ggplot(data = filter(sign_clear,
   geom_col(position = "dodge") +
   facet_grid(rows = vars(label), cols = vars(interaction_type)) +
   labs(title = "baseline results: % sign clear",
-       ylab = "Percentage of results",
-       xlab = "Sign clear") +
+       y = "Percentage of results",
+       x = "Sign clear") +
   scale_fill_viridis_d(breaks = c("gridded", "inla", "nimble")) +
   theme_minimal() 
 
-ggsave(last_plot(), file = "baseline_sign_clear.png")
+ggsave(last_plot(), file = "./Figures/baseline_sign_clear.png")
 
 
 ### error ###
@@ -73,16 +93,16 @@ error <- results_baseline_all %>%
 ggplot(data = filter(error, label == "alpha_ionj" |
                        label == "alpha_joni"), 
        aes(y = error, x = interaction_type, fill = model))+
-  geom_violin(stat = "ydensity") +
+  geom_violin(stat = "ydensity", alpha = 0.5) +
   geom_hline(yintercept = 0)+
   facet_grid(cols = vars(interaction_type), rows = vars(label),
              scales = "free_x") +
   labs(title = "baseline results: error",
        ylab = "error",
-       xlab = "Parameter") +
+       xlab = "interaction type") +
   theme_minimal() 
 
-ggsave(last_plot(), file = "baseline_error.png")
+ggsave(last_plot(), file = "./Figures/baseline_error.png")
 
 
 #############################
@@ -90,6 +110,27 @@ ggsave(last_plot(), file = "baseline_error.png")
 ################################################################################
 
 #### plot results ####
+
+### raw estimates ###
+
+raw <- results_corr1_all %>% 
+  drop_na(error) %>%
+  mutate(label = as.factor(label))
+
+ggplot(data = filter(raw, label == "alpha_ionj" |
+                       label == "alpha_joni"), 
+       aes(y = Mean, x = interaction_type, fill = model))+
+  geom_violin(stat = "ydensity", alpha = 0.5) +
+  geom_hline(yintercept = 0)+
+  facet_grid(cols = vars(interaction_type), rows = vars(label),
+             scales = "free_x") +
+  labs(title = "corr 1 results: mean",
+       y = "estimate",
+       x = "interaction type") +
+  theme_minimal() 
+
+ggsave(last_plot(), file = "./Figures/corr1_raw.png")
+
 
 ### % sign correct ###
 
@@ -118,7 +159,7 @@ ggplot(data = filter(sign_correct,
                        labels =c("R-INLA", "Nimble")) +
   theme_minimal()
 
-ggsave(last_plot(), file = "corr1_sign_correct.png")
+ggsave(last_plot(), file = "./Figures/corr1_sign_correct.png")
 
 
 ### % sign clear###
@@ -145,12 +186,12 @@ ggplot(data = filter(sign_clear,
   geom_col(position = "dodge") +
   facet_grid(rows = vars(label), cols = vars(interaction_type)) +
   labs(title = "corr1 results: % sign clear",
-       ylab = "Percentage of results",
-       xlab = "Sign clear") +
+       y = "Percentage of results",
+       x = "Sign clear") +
   scale_fill_viridis_d(breaks = c("gridded", "inla", "nimble")) +
   theme_minimal() 
 
-ggsave(last_plot(), file = "corr1_sign_clear.png")
+ggsave(last_plot(), file = "./Figures/corr1_sign_clear.png")
 
 
 ### error ###
@@ -167,11 +208,11 @@ ggplot(data = filter(error, label == "alpha_ionj" |
   facet_grid(cols = vars(interaction_type), rows = vars(label),
              scales = "free_x") +
   labs(title = "corr1 results: error",
-       ylab = "error",
-       xlab = "Parameter") +
+       y = "error",
+       x = "Parameter") +
   theme_minimal() 
 
-ggsave(last_plot(), file = "corr1_error.png")
+ggsave(last_plot(), file = "./Figures/corr1_error.png")
 
 
 #############################
@@ -179,6 +220,26 @@ ggsave(last_plot(), file = "corr1_error.png")
 ################################################################################
 
 #### plot results ####
+
+### raw estimates ###
+
+raw <- results_corr2_all %>% 
+  drop_na(error) %>%
+  mutate(label = as.factor(label))
+
+ggplot(data = filter(raw, label == "alpha_ionj" |
+                       label == "alpha_joni"), 
+       aes(y = Mean, x = interaction_type, fill = model))+
+  geom_violin(stat = "ydensity", alpha = 0.5) +
+  geom_hline(yintercept = 0)+
+  facet_grid(cols = vars(interaction_type), rows = vars(label),
+             scales = "free_x") +
+  labs(title = "corr 2 results: mean",
+       y = "estimate",
+       x = "interaction type") +
+  theme_minimal() 
+
+ggsave(last_plot(), file = "./Figures/corr2_raw.png")
 
 ### % sign correct ###
 
@@ -207,7 +268,7 @@ ggplot(data = filter(sign_correct,
                        labels =c("R-INLA", "Nimble")) +
   theme_minimal()
 
-ggsave(last_plot(), file = "corr2_sign_correct.png")
+ggsave(last_plot(), file = "./Figures/corr2_sign_correct.png")
 
 
 ### % sign clear###
@@ -234,12 +295,12 @@ ggplot(data = filter(sign_clear,
   geom_col(position = "dodge") +
   facet_grid(rows = vars(label), cols = vars(interaction_type)) +
   labs(title = "corr2 results: % sign clear",
-       ylab = "Percentage of results",
-       xlab = "Sign clear") +
+       y = "Percentage of results",
+       x = "Sign clear") +
   scale_fill_viridis_d(breaks = c("gridded", "inla", "nimble")) +
   theme_minimal() 
 
-ggsave(last_plot(), file = "corr2_sign_clear.png")
+ggsave(last_plot(), file = "./Figures/corr2_sign_clear.png")
 
 
 ### error ###
@@ -256,11 +317,11 @@ ggplot(data = filter(error, label == "alpha_ionj" |
   facet_grid(cols = vars(interaction_type), rows = vars(label),
              scales = "free_x") +
   labs(title = "corr2 results: error",
-       ylab = "error",
-       xlab = "Parameter") +
+       y = "error",
+       x = "Parameter") +
   theme_minimal() 
 
-ggsave(last_plot(), file = "corr2_error.png")
+ggsave(last_plot(), file = "./Figures/corr2_error.png")
 
 
 #############################
@@ -268,6 +329,26 @@ ggsave(last_plot(), file = "corr2_error.png")
 ################################################################################
 
 #### plot results ####
+
+### raw estimates ###
+
+raw <- results_corr3_all %>% 
+  drop_na(error) %>%
+  mutate(label = as.factor(label))
+
+ggplot(data = filter(raw, label == "alpha_ionj" |
+                       label == "alpha_joni"), 
+       aes(y = Mean, x = interaction_type, fill = model))+
+  geom_violin(stat = "ydensity", alpha = 0.5) +
+  geom_hline(yintercept = 0)+
+  facet_grid(cols = vars(interaction_type), rows = vars(label),
+             scales = "free_x") +
+  labs(title = "corr 3 results: mean",
+       y = "estimate",
+       x = "interaction type") +
+  theme_minimal() 
+
+ggsave(last_plot(), file = "./Figures/corr3_raw.png")
 
 ### % sign correct ###
 
@@ -298,7 +379,7 @@ ggplot(data = filter(sign_correct,
                        labels =c("R-INLA", "Nimble")) +
   theme_minimal()
 
-ggsave(last_plot(), file = "corr3_sign_correct.png")
+ggsave(last_plot(), file = "./Figures/corr3_sign_correct.png")
 
 
 ### % sign clear###
@@ -325,12 +406,12 @@ ggplot(data = filter(sign_clear,
   geom_col(position = "dodge") +
   facet_grid(rows = vars(label), cols = vars(interaction_type)) +
   labs(title = "corr3 results: % sign clear",
-       ylab = "Percentage of results",
-       xlab = "Sign clear") +
+       y = "Percentage of results",
+       x = "Sign clear") +
   scale_fill_viridis_d(breaks = c("gridded", "inla", "nimble")) +
   theme_minimal() 
 
-ggsave(last_plot(), file = "corr3_sign_clear.png")
+ggsave(last_plot(), file = "./Figures/corr3_sign_clear.png")
 
 
 ### error ###
@@ -347,17 +428,37 @@ ggplot(data = filter(error, label == "alpha_ionj" |
   facet_grid(cols = vars(interaction_type), rows = vars(label),
              scales = "free_x") +
   labs(title = "corr3 results: error",
-       ylab = "error",
-       xlab = "Parameter") +
+       y = "error",
+       x = "Parameter") +
   theme_minimal() 
 
-ggsave(last_plot(), file = "corr3_error.png")
+ggsave(last_plot(), file = "./Figures/corr3_error.png")
 
 
 #############################
 ################################################################################
 
 #### plot results ####
+
+### raw estimates ###
+
+raw <- results_noise1_all %>% 
+  drop_na(error) %>%
+  mutate(label = as.factor(label))
+
+ggplot(data = filter(raw, label == "alpha_ionj" |
+                       label == "alpha_joni"), 
+       aes(y = Mean, x = interaction_type, fill = model))+
+  geom_violin(stat = "ydensity", alpha = 0.5) +
+  geom_hline(yintercept = 0)+
+  facet_grid(cols = vars(interaction_type), rows = vars(label),
+             scales = "free_x") +
+  labs(title = "noise 1 results: mean",
+       y = "estimate",
+       x = "interaction type") +
+  theme_minimal() 
+
+ggsave(last_plot(), file = "./Figures/noise1_raw.png")
 
 ### % sign correct ###
 
@@ -386,7 +487,7 @@ ggplot(data = filter(sign_correct,
                        labels =c("R-INLA", "Nimble")) +
   theme_minimal()
 
-ggsave(last_plot(), file = "noise1_sign_correct.png")
+ggsave(last_plot(), file = "./Figures/noise1_sign_correct.png")
 
 
 ### % sign clear###
@@ -413,12 +514,12 @@ ggplot(data = filter(sign_clear,
   geom_col(position = "dodge") +
   facet_grid(rows = vars(label), cols = vars(interaction_type)) +
   labs(title = "noise1 results: % sign clear",
-       ylab = "Percentage of results",
-       xlab = "Sign clear") +
+       y = "Percentage of results",
+       x = "Sign clear") +
   scale_fill_viridis_d(breaks = c("gridded", "inla", "nimble")) +
   theme_minimal() 
 
-ggsave(last_plot(), file = "noise1_sign_clear.png")
+ggsave(last_plot(), file = "./Figures/noise1_sign_clear.png")
 
 
 ### error ###
@@ -435,11 +536,11 @@ ggplot(data = filter(error, label == "alpha_ionj" |
   facet_grid(cols = vars(interaction_type), rows = vars(label),
              scales = "free_x") +
   labs(title = "noise1 results: error",
-       ylab = "error",
-       xlab = "Parameter") +
+       y = "error",
+       x = "Parameter") +
   theme_minimal() 
 
-ggsave(last_plot(), file = "noise1_error.png")
+ggsave(last_plot(), file = "./Figures/noise1_error.png")
 
 
 #############################
@@ -447,6 +548,24 @@ ggsave(last_plot(), file = "noise1_error.png")
 ################################################################################
 
 #### plot results ####
+
+raw <- results_noise2_all %>% 
+  drop_na(error) %>%
+  mutate(label = as.factor(label))
+
+ggplot(data = filter(raw, label == "alpha_ionj" |
+                       label == "alpha_joni"), 
+       aes(y = Mean, x = interaction_type, fill = model))+
+  geom_violin(stat = "ydensity", alpha = 0.5) +
+  geom_hline(yintercept = 0)+
+  facet_grid(cols = vars(interaction_type), rows = vars(label),
+             scales = "free_x") +
+  labs(title = "noise 2 results: mean",
+       y = "estimate",
+       x = "interaction type") +
+  theme_minimal() 
+
+ggsave(last_plot(), file = "./Figures/noise2_raw.png")
 
 ### % sign correct ###
 
@@ -476,7 +595,7 @@ ggplot(data = filter(sign_correct,
   theme_minimal()
 
 
-ggsave(last_plot(), file = "noise2_sign_correct.png")
+ggsave(last_plot(), file = "./Figures/noise2_sign_correct.png")
 
 
 ### % sign clear###
@@ -501,12 +620,12 @@ ggplot(data = filter(sign_clear,
   geom_col(position = "dodge") +
   facet_grid(rows = vars(label), cols = vars(interaction_type)) +
   labs(title = "noise2 results: % sign clear",
-       ylab = "Percentage of results",
-       xlab = "Sign clear") +
+       y = "Percentage of results",
+       x = "Sign clear") +
   scale_fill_viridis_d(breaks = c("gridded", "inla", "nimble")) +
   theme_minimal() 
 
-ggsave(last_plot(), file = "noise2_sign_clear.png")
+ggsave(last_plot(), file = "./Figures/noise2_sign_clear.png")
 
 
 ### error ###
@@ -523,11 +642,11 @@ ggplot(data = filter(error, label == "alpha_ionj" |
   facet_grid(cols = vars(interaction_type), rows = vars(label),
              scales = "free_x") +
   labs(title = "noise2 results: error",
-       ylab = "error",
-       xlab = "Parameter") +
+       y = "error",
+       x = "Parameter") +
   theme_minimal() 
 
-ggsave(last_plot(), file = "noise2_error.png")
+ggsave(last_plot(), file = "./Figures/noise2_error.png")
 
 
 #############################
@@ -535,6 +654,24 @@ ggsave(last_plot(), file = "noise2_error.png")
 ################################################################################
 
 #### plot results ####
+
+raw <- results_unequal_all %>% 
+  drop_na(error) %>%
+  mutate(label = as.factor(label))
+
+ggplot(data = filter(raw, label == "alpha_ionj" |
+                       label == "alpha_joni"), 
+       aes(y = Mean, x = interaction_type, fill = model))+
+  geom_violin(stat = "ydensity", alpha = 0.5) +
+  geom_hline(yintercept = 0)+
+  facet_grid(cols = vars(interaction_type), rows = vars(label),
+             scales = "free_x") +
+  labs(title = "unequal results: mean",
+       y = "estimate",
+       x = "interaction type") +
+  theme_minimal() 
+
+ggsave(last_plot(), file = "./Figures/unequal_raw.png")
 
 ### % sign correct ###
 
@@ -564,7 +701,7 @@ ggplot(data = filter(sign_correct,
   theme_minimal()
 
 
-ggsave(last_plot(), file = "unequal_sign_correct.png")
+ggsave(last_plot(), file = "./Figures/unequal_sign_correct.png")
 
 
 ### % sign clear###
@@ -591,12 +728,12 @@ ggplot(data = filter(sign_clear,
   geom_col(position = "dodge") +
   facet_grid(rows = vars(label), cols = vars(interaction_type)) +
   labs(title = "unequal results: % sign clear",
-       ylab = "Percentage of results",
-       xlab = "Sign clear") +
+       y = "Percentage of results",
+       x = "Sign clear") +
   scale_fill_viridis_d(breaks = c("gridded", "inla", "nimble")) +
   theme_minimal() 
 
-ggsave(last_plot(), file = "unequal_sign_clear.png")
+ggsave(last_plot(), file = "./Figures/unequal_sign_clear.png")
 
 
 ### error ###
@@ -613,11 +750,11 @@ ggplot(data = filter(error, label == "alpha_ionj" |
   facet_grid(cols = vars(interaction_type), rows = vars(label),
              scales = "free_x") +
   labs(title = "unequal results: error",
-       ylab = "error",
-       xlab = "Parameter") +
+       y = "error",
+       x = "Parameter") +
   theme_minimal() 
 
-ggsave(last_plot(), file = "unequal_error.png")
+ggsave(last_plot(), file = "./Figures/unequal_error.png")
 
 
 ################################################################################

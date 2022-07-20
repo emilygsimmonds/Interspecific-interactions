@@ -61,7 +61,7 @@ no_interaction_c <- ggplot(data = filter(no_interaction_all,
                          aes(Counts,colour = Type))+
   geom_histogram(binwidth = 5)+
   xlim(-10, 1000)+
-  ylim(0,4000)+
+  ylim(0, 4000)+
   facet_wrap(~Type)+
   labs(title = "Competition",
        y = "frequency",

@@ -57,7 +57,7 @@ if(is.null(rho)){stop("please supply correlation of noise (rho)")}
 
 if((length(r)==length(starts) &
     length(starts)==length(alphas)/2)==FALSE)
-{stop("inputs (r, N, starts, e, or half alphas) are not the same length")}
+{stop("inputs (r, N, starts, tau, or half alphas) are not the same length")}
 
 if((length(tau)==length(rho))==FALSE)
 {stop("inputs (tau and rho) are not the same length")}
