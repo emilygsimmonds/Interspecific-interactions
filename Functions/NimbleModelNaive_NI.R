@@ -45,14 +45,14 @@ code <- nimbleCode({
   r_j ~ T(dnorm(1, sd = 5), 0, 10)
   c_i ~ T(dnorm(0.5, sd = 5), 0, 10) 
   c_j ~ T(dnorm(0.5, sd = 5), 0, 10)
-  alpha_ij ~ dnorm(0, 0.1)
-  alpha_ji ~ dnorm(0, 0.1)
+  #alpha_ij ~ dnorm(0, 0.1)
+  #alpha_ji ~ dnorm(0, 0.1)
   
   mu[1, 1] ~ dnorm(6, 1) # means of log population size at t+1
   mu[1, 2] ~ dnorm(6, 1)
   
   # actual log population size at t+1
-  N[1, 1:M] ~ dmnorm(mu[1, 1:M], prec[1:M,1:M]) 
+  #N[1, 1:M] ~ dmnorm(mu[1, 1:M], prec[1:M,1:M]) 
   
   for(i in 1:(n-1)){
     
@@ -60,8 +60,10 @@ code <- nimbleCode({
     
     # state process
     
-    mu[i+1,1:M] <- c(r_i + (c_i*N[i,1])+(alpha_ij*N[i,2]),
-                     r_j + (c_j*N[i,2])+(alpha_ji*N[i,1]))
+    #mu[i+1,1:M] <- c(r_i + (c_i*N[i,1])+(alpha_ij*N[i,2]),
+    #                 r_j + (c_j*N[i,2])+(alpha_ji*N[i,1]))
+    mu[i+1,1:M] <- c(r_i + (c_i*N[i,1])+(0*N[i,2]),
+                     r_j + (c_j*N[i,2])+(0*N[i,1]))
     N[i+1, 1:M] ~ dmnorm(mu[i+1, 1:M], 
                          prec[1:M,1:M])
     
@@ -87,7 +89,7 @@ constants <- list(n=n, M=2)
 
 inits <- list(r_i = 1, r_j = 1, 
               c_i = 0.5, c_j = 0.5, 
-              alpha_ij = 0, alpha_ji = 0,
+              #alpha_ij = 0, alpha_ji = 0,
               prec = matrix(c(1,0,0,1),2,2),
               N = matrix(c(6,6),n,2),
               mu = matrix(rep(6,(n*2)),n,2),
@@ -117,9 +119,8 @@ CmodelS1 <- compileNimble(RmodelS1) # this compiles the model in C++
 # it was identified in early analyses that these are correlated
 # setting up covariance allows block sampling
 
-cov1 <- cov2 <- matrix(c(0.003, -0.0015, 0.0025,
-                         -0.0015, 0.003, -0.0015,
-                         0.0025, -0.0015, 0.003), nrow=3, ncol=3, byrow=T)
+cov1 <- cov2 <- matrix(c(0.003, -0.0015,
+                         -0.0015, 0.003), nrow=2, ncol=2, byrow=T)
 
 # configure
 
@@ -129,15 +130,15 @@ confS1 <- configureMCMC(RmodelS1)
 
 # remove old
 
-confS1$removeSamplers(c('alpha_ij', 'alpha_ji', 'c_i', 'c_j', 'r_i', 'r_j'))
+confS1$removeSamplers(c('c_i', 'c_j', 'r_i', 'r_j'))
 
 # add the new ones
 
-confS1$addSampler(target = c('alpha_ji', 'c_j', 'r_j'),
+confS1$addSampler(target = c('c_j', 'r_j'),
                   type = 'RW_block',
                   propCov = cov1)
 
-confS1$addSampler(target = c('alpha_ij', 'c_i', 'r_i'),
+confS1$addSampler(target = c('c_i', 'r_i'),
                   type = 'RW_block', 
                   propCov = cov2)
 

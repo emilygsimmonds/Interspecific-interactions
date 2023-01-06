@@ -51,11 +51,11 @@ run_inla_model <- function(x){
   # indexed to the state/ discrepancy not to the observations
   
   # time lag influence on other species (j on i)
-  sp2.copy2 <- c(NAs.Y, NAs.Y, 1:m, NAsm1) 
+  #sp2.copy2 <- c(NAs.Y, NAs.Y, 1:m, NAsm1) 
   
   sp1.copy1 <- c(NAs.Y, NAs.Y, 1:m, NAsm1) # time lag influence on own species
   # time lag influence on other species (i on j)
-  sp1.copy2 <- c(NAs.Y, NAs.Y, NAsm1, 1:m) 
+  #sp1.copy2 <- c(NAs.Y, NAs.Y, NAsm1, 1:m) 
   
   # Finally, create the shared noise component
   # this focuses on the state, first entry is NA
@@ -74,9 +74,9 @@ run_inla_model <- function(x){
                     sp2.lamda=sp2.lamda, # species j counts
                     w.sp2.lamda= w.sp2.lamda, # species j obs process
                     sp2.copy1=sp2.copy1, # species j intra-specific
-                    sp2.copy2=sp2.copy2, # species j inter-specific
+                    #sp2.copy2=sp2.copy2, # species j inter-specific
                     sp1.copy1=sp1.copy1, # species i intra-specific
-                    sp1.copy2=sp1.copy2, # species i inter-specific
+                    #sp1.copy2=sp1.copy2, # species i inter-specific
                     combo.noise=combo.noise, # noise
                     muI=muI, # intercepts
                     muJ=muJ)
@@ -97,12 +97,12 @@ run_inla_model <- function(x){
     
     # inter-specific effects
     
-    f(sp1.copy2, copy = "sp1.lamda", 
-      hyper = list(Beta = list(initial = 0.000000001, 
-                               prior = "gaussian", param=c(0,1/(0.1^2)), fixed=F))) +
-    f(sp2.copy2, copy = "sp2.lamda", 
-      hyper = list(Beta = list(initial = 0.000000001, 
-                               prior = "gaussian", param=c(0,1/(0.1^2)), fixed=F))) +
+    #f(sp1.copy2, copy = "sp1.lamda", 
+     # hyper = list(Beta = list(initial = 0.000000001, 
+      #                         prior = "gaussian", param=c(0,1/(0.1^2)), fixed=F))) +
+    #f(sp2.copy2, copy = "sp2.lamda", 
+     # hyper = list(Beta = list(initial = 0.000000001, 
+      #                         prior = "gaussian", param=c(0,1/(0.1^2)), fixed=F))) +
     
     f(combo.noise, model="iid2d", n = 2*(n-1)) + 
     
@@ -110,7 +110,7 @@ run_inla_model <- function(x){
   
   # run model
   INLAModel <- inla(formula = formula, data=data, 
-                    family = rep(c("poisson", "gaussian"), each=2), 
+                    family = rep(c("poisson", "gaussian"), each=1), 
                     control.family = list(list(), list(), 
                                           list(initial=10, fixed=T), 
                                           list(initial=10, fixed=T)), 
