@@ -18,7 +18,8 @@ source('./Functions/Extract_best_result.R')
 ################################################################################
 
 summarise_data <- function(pattern_string,
-                           interaction_type = c("c", "m", "p")){
+                           interaction_type = c("c", "m", "p"),
+                           NI = FALSE){
   # interactions stored in results in order above
   # save a marker of what numbers this is
   focal_interaction_marker <- ((100*which(c("c", "m", "p")==interaction_type))-99):
@@ -27,7 +28,10 @@ summarise_data <- function(pattern_string,
 ### FIRST: read in all of the data
     
   ## read in inla data
-  inla_results <- readRDS(paste0("./Results/", pattern_string, "_inla_results_2021.rds"))[focal_interaction_marker]
+  inla_results <- readRDS(paste0("./Results/", pattern_string, "_inla_results_2022.rds"))[focal_interaction_marker]
+  if(NI == TRUE){inla_results <- readRDS(paste0("./Results/",
+                                                pattern_string, 
+                                                "_inla_results_NI_2022.rds"))[focal_interaction_marker]}
   
   # clean - remove all entries in list that had an error
   
@@ -46,7 +50,9 @@ summarise_data <- function(pattern_string,
   
   # get file names
   filenames_nimble <- list.files("./Results/", pattern = paste0(pattern_string, 
-                                                        "_naive_nimble_results_2021"))
+                                                        "_naive_nimble_results_2022.rds"))
+  if(NI == TRUE){filenames_nimble <- list.files("./Results/", pattern = paste0(pattern_string, 
+                                                                               "_naive_nimble_results_NI_2022.rds"))}
   
   #filenames_gridded <- list.files("./", pattern = paste0(pattern_string, 
   #                                                      "_gridded_nimble_results"))
@@ -73,9 +79,14 @@ summarise_data <- function(pattern_string,
     rownames(fixed) <- c("r_i", "r_j")
     
     # extract hyper params and rename
+    if(NI == FALSE){
     hyper <- summary(.x)$hyper[,c(1,3,5)]
     rownames(hyper) <- c("tau_i", "tau_j", "Rho",
-                         "c_i", "c_j", "alpha_ionj", "alpha_joni")
+                         "c_i", "c_j", "alpha_ionj", "alpha_joni")}
+    if(NI == TRUE){
+      hyper <- summary(.x)$hyper[,c(1,3,5)]
+      rownames(hyper) <- c("tau_i", "tau_j", "Rho",
+                           "c_i", "c_j")}
     
     all <- rbind(fixed, hyper)
     return(all)  
@@ -121,6 +132,7 @@ summarise_data <- function(pattern_string,
                      seq(nrow(true_all[which(clean_rows==TRUE),])))
   
   # add truth to inla results, add as a column - match row names
+  if(NI == FALSE){
   final_results_inla_T <- map2(.x = final_results_inla, .y = inla_true, 
                                ~{colnames(.x) <- c("Mean", "95%CI_low", "95%CI_upp")
                                  .x$true <- rep(NA, length(.x[,1]))
@@ -136,7 +148,22 @@ summarise_data <- function(pattern_string,
                                  .x$interaction_type <- interaction_type
                                  .x$model <- "inla"
                                  return(.x)
-                               })
+                               })}
+  if(NI == TRUE){
+    final_results_inla_T <- map2(.x = final_results_inla, .y = inla_true, 
+                                 ~{colnames(.x) <- c("Mean", "95%CI_low", "95%CI_upp")
+                                 .x$true <- rep(NA, length(.x[,1]))
+                                 .x["r_i", "true"] <- .y$r_i 
+                                 .x["r_j", "true"] <- .y$r_j 
+                                 .x["c_i", "true"] <- .y$c_i 
+                                 .x["c_j", "true"] <- .y$c_j 
+                                 .x["tau_i", "true"] <- .y$tau_i
+                                 .x["tau_j", "true"] <- .y$tau_j 
+                                 .x["Rho", "true"] <- .y$Rho
+                                 .x$interaction_type <- interaction_type
+                                 .x$model <- "inla"
+                                 return(.x)
+                                 })}
   
   ## NIMBLE
   
@@ -145,6 +172,7 @@ summarise_data <- function(pattern_string,
   nimble_true <- split(true_all, seq(nrow(true_all)))
   
   # add truth to nimble results, add as a column - match row names
+  if(NI == FALSE){
   final_results_nimble_T <- map2(.x = final_results_nimble, .y = nimble_true, 
                                ~{.x <- as.data.frame(.x)
                                   colnames(.x) <- c("Mean", "95%CI_low", "95%CI_upp")
@@ -166,38 +194,32 @@ summarise_data <- function(pattern_string,
                                rownames(.x)[which(rownames(.x) == "prec[1, 1]")] <- "tau_i"
                                rownames(.x)[which(rownames(.x) == "prec[2, 2]")] <- "tau_j"
                                return(.x)
-                               })
+                               })}
   
-  # add truth to nimble results, add as a column - match row names
-  #final_results_nimble_gridded_T <- map2(.x = final_results_nimble_gridded, 
-  #                                     .y = nimble_true, 
-  #                             ~{.x <- as.data.frame(.x)
-  #                             colnames(.x) <- c("Mean", "95%CI_low", "95%CI_upp")
-  #                             .x$true <- rep(NA, length(.x[,1]))
-  #                             .x["r_i", "true"] <- .y$r_i 
-  #                             .x["r_j", "true"] <- .y$r_j 
-  #                             .x["c_i", "true"] <- .y$c_i 
-  #                             .x["c_j", "true"] <- .y$c_j 
-  #                             .x["alpha_ij", "true"] <- .y$alpha_ionj 
-  #                             .x["alpha_ji", "true"] <- .y$alpha_joni 
-  #                             .x["prec[1, 1]", "true"] <- .y$tau_i
-  #                             .x["prec[2, 2]", "true"] <- .y$tau_j 
-  #                             .x["prec[1, 2]", "true"] <- .y$Rho
-  #                             .x["prec[2, 1]", "true"] <- .y$Rho
-  #                             .x$interaction_type <- interaction_type
-  #                             .x$model <- "gridded"
-  #                             rownames(.x)[which(rownames(.x) == "alpha_ij")] <- "alpha_ionj"
-  #                             rownames(.x)[which(rownames(.x) == "alpha_ji")] <- "alpha_joni"
-  #                             rownames(.x)[which(rownames(.x) == "prec[1, 1]")] <- "tau_i"
-  #                             rownames(.x)[which(rownames(.x) == "prec[2, 2]")] <- "tau_j"
-  #                             return(.x)
-  #                             })
+  if(NI == TRUE){
+    final_results_nimble_T <- map2(.x = final_results_nimble, .y = nimble_true, 
+                                   ~{.x <- as.data.frame(.x)
+                                   colnames(.x) <- c("Mean", "95%CI_low", "95%CI_upp")
+                                   .x$true <- rep(NA, length(.x[,1]))
+                                   .x["r_i", "true"] <- .y$r_i 
+                                   .x["r_j", "true"] <- .y$r_j 
+                                   .x["c_i", "true"] <- .y$c_i 
+                                   .x["c_j", "true"] <- .y$c_j 
+                                   .x["prec[1, 1]", "true"] <- .y$tau_i
+                                   .x["prec[2, 2]", "true"] <- .y$tau_j 
+                                   .x["prec[1, 2]", "true"] <- .y$Rho
+                                   .x["prec[2, 1]", "true"] <- .y$Rho
+                                   .x$interaction_type <- interaction_type
+                                   .x$model <- "nimble"
+                                   rownames(.x)[which(rownames(.x) == "prec[1, 1]")] <- "tau_i"
+                                   rownames(.x)[which(rownames(.x) == "prec[2, 2]")] <- "tau_j"
+                                   return(.x)
+                                   })}
   
   
   #### RETURN ALL SUMMARY RESULTS
   
   return(list(final_results_inla_T,
               final_results_nimble_T))
-              #final_results_nimble_gridded_T))
-  
+
 }

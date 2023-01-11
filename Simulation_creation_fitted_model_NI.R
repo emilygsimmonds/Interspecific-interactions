@@ -42,7 +42,7 @@ simulations_pp <- bind_rows(simulations_all[201:300])
 
 #### Pull in the results ####
 
-source('./Functions/RESULTS_baseline.R')
+source('./Functions/RESULTS_baseline_NI.R')
 
 ###############################################################################
 
@@ -54,15 +54,15 @@ source('./Functions/RESULTS_baseline.R')
 # also need to make sure each entry of a list is a single model output
 # do this by creating own grouping variable and then using group_split
 nimble_dataset <- results_baseline_all %>% filter(model == "nimble",
-                       interaction_type == "c") %>%
-  mutate(Group = rep(1:100, each = 110)) %>% # there are 110 parameters est in nimble model
+                                                  interaction_type == "c") %>%
+  mutate(Group = rep(1:100, each = 108)) %>% # there are 108 parameters est in nimble model
   group_by(Group) %>%
   group_split
 
 
 inla_dataset <- results_baseline_all %>% filter(model == "inla",
                                                 interaction_type == "c") %>%
-  mutate(Group = rep(1:100, each = 9)) %>% # 9 parameters est in inla model
+  mutate(Group = rep(1:100, each = 7)) %>% # 7 parameters est in inla model
   group_by(Group) %>%
   group_split
 
@@ -72,27 +72,29 @@ source('./Functions/Extract_parameters.R')
 
 # run simulations
 simulation_nimble_cc <- unlist(map(.x = nimble_dataset, 
-                            ~{Extract_parameters(.x,
-                                                       n = 50,
-                                                       starts = log(c(100,100)),
-                                                       burnin = 50,
-                                                       seed = NULL,
-                                                       maxiter = 50000,
-                                                       prevent_extinction = FALSE)
-  }), recursive = FALSE)
+                                   ~{Extract_parameters(.x,
+                                                        n = 50,
+                                                        starts = log(c(100,100)),
+                                                        burnin = 50,
+                                                        seed = NULL,
+                                                        maxiter = 50000,
+                                                        prevent_extinction = FALSE,
+                                                        NI = TRUE)
+                                   }), recursive = FALSE)
 
 # some inla results have NaN for parameter estimates
 # therefore these will not run and give an error
 # add 'safely' function to catch them - do not use unlist yet!!!
 simulation_inla_cc <- map(.x = inla_dataset, 
-                                 safely(~{Extract_parameters(.x,
-                                                 n = 50,
-                                                 starts = log(c(100,100)),
-                                                 burnin = 50,
-                                                 seed = NULL,
-                                                 maxiter = 50000,
-                                                 prevent_extinction = FALSE)
-                            }))
+                          safely(~{Extract_parameters(.x,
+                                                      n = 50,
+                                                      starts = log(c(100,100)),
+                                                      burnin = 50,
+                                                      seed = NULL,
+                                                      maxiter = 50000,
+                                                      prevent_extinction = FALSE,
+                                                      NI = TRUE)
+                          }))
 
 # remove all error entries and remove all 'results' that are NULL
 simulation_inla_cc <- simulation_inla_cc %>% map("result") %>% compact() 
@@ -112,19 +114,19 @@ inla_cc_all <- simulation_inla_cc %>% bind_rows() %>% bind_rows(simulations_cc) 
 #### SAVE ####
 
 save(nimble_cc_all, 
-     file = "./Simulated data/fitted_simulation_nimble_cc.RData")
+     file = "./Simulated data/fitted_simulation_nimble_cc_NI.RData")
 
-save(inla_cc_all, 
-     file = "./Simulated data/ffitted_simulation_inla_cc.RData")
+save(inla_mm_all, 
+     file = "./Simulated data/fitted_simulation_inla_cc_NI.RData")
 
 ################################################################################
 
 # make summary table
 summary_table_nimble_cc <- nimble_cc_all %>% group_by(Label, Count) %>% 
   summarise(min = min(value),
-                  mean = mean(value),
-                  median = median(value),
-                  max = max(value))
+            mean = mean(value),
+            median = median(value),
+            max = max(value))
 
 summary_table_inla_cc <- inla_cc_all %>% # remove infinite values
   filter(!is.infinite(value)) %>% group_by(Label, Count) %>% 
@@ -198,14 +200,14 @@ write.csv(summary_table_by_simulation_cc, "summary_table_by_simulation_cc.csv")
 # do this by creating own grouping variable and then using group_split
 nimble_dataset <- results_baseline_all %>% filter(model == "nimble",
                                                   interaction_type == "m") %>%
-  mutate(Group = rep(1:100, each = 110)) %>% # there are 110 parameters est in nimble model
+  mutate(Group = rep(1:100, each = 108)) %>% # there are 110 parameters est in nimble model
   group_by(Group) %>%
   group_split
 
 
 inla_dataset <- results_baseline_all %>% filter(model == "inla",
                                                 interaction_type == "m") %>%
-  mutate(Group = rep(1:100, each = 9)) %>% # 9 parameters est in inla model
+  mutate(Group = rep(1:100, each = 7)) %>% # 9 parameters est in inla model
   group_by(Group) %>%
   group_split
 
@@ -221,7 +223,8 @@ simulation_nimble_mm <- unlist(map(.x = nimble_dataset,
                                                         burnin = 50,
                                                         seed = NULL,
                                                         maxiter = 50000,
-                                                        prevent_extinction = FALSE)
+                                                        prevent_extinction = FALSE,
+                                                        NI = TRUE)
                                    }), recursive = FALSE)
 
 # some inla results have NaN for parameter estimates
@@ -234,7 +237,8 @@ simulation_inla_mm <- map(.x = inla_dataset,
                                                       burnin = 50,
                                                       seed = NULL,
                                                       maxiter = 50000,
-                                                      prevent_extinction = FALSE)
+                                                      prevent_extinction = FALSE,
+                                                      NI = TRUE)
                           }))
 
 # remove all error entries and remove all 'results' that are NULL
@@ -255,10 +259,10 @@ inla_mm_all <- simulation_inla_mm %>% bind_rows() %>% bind_rows(simulations_mm) 
 #### SAVE ####
 
 save(nimble_mm_all, 
-     file = "./Simulated data/fitted_simulation_nimble_mm.RData")
+     file = "./Simulated data/fitted_simulation_nimble_mm_NI.RData")
 
 save(inla_mm_all, 
-     file = "./Simulated data/fitted_simulation_inla_mm.RData")
+     file = "./Simulated data/fitted_simulation_inla_mm_NI.RData")
 
 ################################################################################
 
@@ -344,14 +348,14 @@ write.csv(summary_table_by_simulation_mm, "summary_table_by_simulation_mm.csv")
 # do this by creating own grouping variable and then using group_split
 nimble_dataset <- results_baseline_all %>% filter(model == "nimble",
                                                   interaction_type == "p") %>%
-  mutate(Group = rep(1:100, each = 110)) %>% # there are 110 parameters est in nimble model
+  mutate(Group = rep(1:100, each = 108)) %>% # there are 110 parameters est in nimble model
   group_by(Group) %>%
   group_split
 
 
 inla_dataset <- results_baseline_all %>% filter(model == "inla",
                                                 interaction_type == "p") %>%
-  mutate(Group = rep(1:99, each = 9)) %>% # 9 parameters est in inla model
+  mutate(Group = rep(1:100, each = 7)) %>% # 9 parameters est in inla model
   # seem to only have 99 results here
   group_by(Group) %>%
   group_split
@@ -368,7 +372,8 @@ simulation_nimble_pp <- unlist(map(.x = nimble_dataset,
                                                         burnin = 50,
                                                         seed = NULL,
                                                         maxiter = 50000,
-                                                        prevent_extinction = FALSE)
+                                                        prevent_extinction = FALSE,
+                                                        NI = TRUE)
                                    }), recursive = FALSE)
 
 # some inla results have NaN for parameter estimates
@@ -381,7 +386,8 @@ simulation_inla_pp <- map(.x = inla_dataset,
                                                       burnin = 50,
                                                       seed = NULL,
                                                       maxiter = 50000,
-                                                      prevent_extinction = FALSE)
+                                                      prevent_extinction = FALSE,
+                                                      NI = TRUE)
                           }))
 
 # remove all error entries and remove all 'results' that are NULL
@@ -402,10 +408,10 @@ inla_pp_all <- simulation_inla_pp %>% bind_rows() %>% bind_rows(simulations_pp) 
 #### SAVE ####
 
 save(nimble_pp_all, 
-     file = "./Simulated data/fitted_simulation_nimble_pp.RData")
+     file = "./Simulated data/fitted_simulation_nimble_pp_NI.RData")
 
 save(inla_pp_all, 
-     file = "./Simulated data/fitted_simulation_inla_pp.RData")
+     file = "./Simulated data/fitted_simulation_inla_pp_NI.RData")
 
 ################################################################################
 

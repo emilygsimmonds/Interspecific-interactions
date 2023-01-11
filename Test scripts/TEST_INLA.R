@@ -13,12 +13,13 @@ library(furrr) # allows parallel running
 
 #### load data ####
 
-load("simulated_TS_2020.RData")
+load("./Simulated data/simulated_TS_2021.RData")
 
 #### source ####
 
-source('runINLAModel.R')
-source('INLAModel.R')
+source('./Functions/runINLAModel.R')
+source('./Functions/runINLAModel_NI.R')
+source('./Functions/INLAModel.R')
 
 ###############################################################################
 
@@ -187,8 +188,12 @@ standard[[1]]$summary.fixed
 
 first[[1]]$summary.fixed
 
+first[[1]]$summary.hyper
+
 second[[1]][[1]]$summary.fixed
 
 standard[[1]]$summary.random$sp1.lamda[1:10,]
 
 second[[1]][[1]]$summary.random$sp1.lamda[1:10,]
+
+first[[1]]$summary.random

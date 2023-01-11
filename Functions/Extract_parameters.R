@@ -21,7 +21,8 @@ Extract_parameters <- function(Results,
                                burnin = 50,
                                seed = NULL,
                                maxiter = 50,
-                               prevent_extinction = TRUE){
+                               prevent_extinction = TRUE,
+                               NI = FALSE){
   
 # parameters that we need are:
 
@@ -45,9 +46,14 @@ rho <- c(Results$Mean[Results$label == "prec[2, 1]"],
 rho <- c(Results$Mean[Results$label == "Rho"], 
          Results$Mean[Results$label == "Rho"])       
            }
+if(NI == FALSE){
 alpha_matrix <- matrix(c(c[1], Results$Mean[Results$label == "alpha_ionj"],
                          Results$Mean[Results$label == "alpha_joni"], c[2]), 
-                       ncol = 2, byrow = TRUE)
+                       ncol = 2, byrow = TRUE)}
+if(NI == TRUE){
+  alpha_matrix <- matrix(c(c[1], 0,
+                           0, c[2]), 
+                         ncol = 2, byrow = TRUE)}
 
 ## Run the simulation 100 times
 

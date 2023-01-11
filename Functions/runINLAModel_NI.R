@@ -110,7 +110,7 @@ run_inla_model <- function(x){
   
   # run model
   INLAModel <- inla(formula = formula, data=data, 
-                    family = rep(c("poisson", "gaussian"), each=1), 
+                    family = rep(c("poisson", "gaussian"), each=2), 
                     control.family = list(list(), list(), 
                                           list(initial=10, fixed=T), 
                                           list(initial=10, fixed=T)), 
